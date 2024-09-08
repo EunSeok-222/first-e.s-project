@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>용돈관리</title>
+</head>
+<body>
+  <h1>용돈관리</h1>
+
+  <div class="container">
+    <div class="form_area">
+      <form id="pay_form">
+
+        <div>
+          <label for="pay_total">잔고</label>
+          <input type="int" name="pay_total" id="pay_total" required>원
+        </div><br>
+        <div>
+          <label for="pay_date">날짜</label>
+          <input type="date" name="pay_date" id="pay_date" required>
+        </div><br>
+        <div>
+          <label for="pay_io">형태</label>
+          <select name="pay_io" id="pay_io">
+          <option value="수입" selected>수입</option>
+          <option value="지출">지출</option>
+          </select>
+        </div><br>
+        <div>
+          <label for="pay_money">금액</label>
+          <input type="int" name="pay_money"id="pay_money" required>
+        </div><br>
+        <div>
+          <label for="pay_content">내용</label>
+          <textarea name="pay_content" id="pay_content"cols="30" rows="3" required></textarea>
+        </div>
+        <div>
+          <input type="submit" value="등록">
+          <input type="reset" value="지우기">
+        </div>
+      </form>
+    </div>
+    <!-- 이력 -->
+    <div class="list_area">
+      <table>
+        <thead>
+          <tr>
+            <th>날짜</th><th>형태</th><th>내용</th><th>금액</th>
+          </tr>
+        </thead>
+        <tbody id="pay_tbody">
+
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+
+  <script>
+    let pay_arr = [];//todo배열 /함수 밖에 선언 전역변수
+
+    function load_pay_list(){
+      let p_json = localStorage.getItem("pay_json")
+      if( p_json ){
+        pay_arr = JSON.parse(p_json)
+        update_pay_list()
+      }
+    }
+    load_pay_list()
+    // form에 전송 이벤트 처리
+    let pay_form = document.querySelector("#pay_form")
+      pay_form.onsubmit = function(){
+        //alert('전송') //중간 확인용
+    
+        //입력한 값을 todo객체로 만들어 todo배열에 저장
+        let p_total = pay_form.pay_total.value
+        let p_date = pay_form.pay_date.value
+        let p_io = pay_form.pay_io.value
+        let p_money = pay_form.pay_money.value
+        let p_content = pay_form.pay_content.value
+        alert(p_total+","+p_date+","+p_io+","+p_money+","+p_content) //중간 확인용
+
+        let p_obj = {
+          p_no : new Date().getTime(),
+          p_total: p_total,
+          p_date: p_date,
+          p_io: p_io,
+          p_money: p_money,
+          p_content: p_content,
+          p_done: false // 종료 여부
+        }
+        
+        pay_arr.push(p_obj) // 입력값을 객체로 전달하여 배열에 저장 
+        // localStorage에 저장. 껐다 켜도  복원
+        let p_json = JSON.stringify(pay_arr)//배열을 문자열로 변환
+        localStorage.setItem("pay_json",p_json)
+        
+
+
+
+        // alert("용돈 기록 : "+pay_arr.length)
+        pay_form.reset()
+
+        // 이력에 출력
+        update_pay_list()
+
+        return false;//기본동작 취소/이거 안하면 입력값 사라짐
+      }
+      function update_pay_list(){
+        let pay_tbody = document.querySelector("#pay_tbody")
+        let s = "" //문자열 초기화
+        for( let p of pay_arr){
+          s += "<tr>"
+          s += "<td>"+p.p_date+"</td>"
+          s += "<td>"+p.p_io+"</td>"
+          s += "<td><a href='#' onclick='show_pay("+p.p_no+")'>"+p.p_content+"</a></td>"
+          s += "<td>"+p.p_money+"</td>"
+          s += "</tr>"
+      }
+      pay_tbody.innerHTML = s; 
+  }
+   // no에 해당하는 할일 찾아서 보여주기
+  function show_pay(no){
+    for (let p of pay_arr){
+      if ( p.p_no == no){
+        display_pay(p)
+        break 
+      }
+    }
+  }
+  function display_pay(pay_obj){
+    pay_form.pay_total.value = pay_obj.p_total
+    pay_form.pay_date.value = pay_obj.p_date
+    pay_form.pay_io.value = pay_obj.p_io
+    pay_form.pay_money.value = pay_obj.p_money
+    pay_form.pay_content.value = pay_obj.p_content
+  }
+      
+  </script>
+</body>
+</html>
